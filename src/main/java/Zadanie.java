@@ -8,6 +8,13 @@ public class Zadanie {
     }
 
     private static int getNext(List<Integer> list) {
+        list.sort(Integer::compareTo);
+        for (int i = 0; i < list.size() -1; i++) {
+            if (list.get(i) + 1 == list.get(i + 1)) {
+                return list.get(i) + 1;
+            }
+
+        }
         return 0;
     }
     private static int getNext2(List<Integer> list) {
