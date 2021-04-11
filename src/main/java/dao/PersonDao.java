@@ -4,8 +4,10 @@ import model.Person;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.chrono.ChronoLocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PersonDao implements IPersonDao {
 
@@ -34,9 +36,10 @@ public class PersonDao implements IPersonDao {
 
     private void openConnection() {
         try {
+            Class.forName("com.mysql.cj.jdbc.Driver"); // podaje się gdy jest więcej sterowników baz danych
             connection = DriverManager.getConnection(url, "root", "root");
             System.out.println("connected");
-        } catch (SQLException throwables) {
+        } catch (SQLException | ClassNotFoundException throwables) {
             throwables.printStackTrace();
         }
     }
@@ -62,14 +65,7 @@ public class PersonDao implements IPersonDao {
             ResultSet resultSet = statement.executeQuery(query);
 
             while (resultSet.next()) {
-                Person person = new Person();
-                person.setPersonId(resultSet.getInt("person_id"));
-                person.setFirstName(resultSet.getString("first_name"));
-                person.setLastName(resultSet.getString("last_name"));
-                Date birthDate = resultSet.getDate("birth_date");
-                if (birthDate != null) {
-                    person.setBirthDate(birthDate.toLocalDate());
-                }
+                Person person = getPersonFromResultSet(resultSet);
                 personList.add(person);
             }
         } catch (SQLException throwables) {
@@ -80,14 +76,61 @@ public class PersonDao implements IPersonDao {
         return personList;
     }
 
+    private Person getPersonFromResultSet(ResultSet resultSet) throws SQLException {
+        Person person = new Person();
+        person.setPersonId(resultSet.getInt("person_id"));
+        person.setFirstName(resultSet.getString("first_name"));
+        person.setLastName(resultSet.getString("last_name"));
+        Date birthDate = resultSet.getDate("birth_date");
+        if (birthDate != null) {
+            person.setBirthDate(birthDate.toLocalDate());
+        }
+        return person;
+    }
+
     @Override
     public Person getById(int id) {
-        return null;
+        String query = "select * from persons where person_id = ?";
+        Person person = new Person();
+        openConnection();
+        try (PreparedStatement statement = connection.prepareStatement(query)){
+            statement.setInt(1, id);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                person.setPersonId(resultSet.getInt("person_id"));
+                person.setFirstName(resultSet.getString("first_name"));
+                person.setLastName(resultSet.getString("last_name"));
+                Date birthDate = resultSet.getDate("birth_date");
+                if (birthDate != null) {
+                    person.setBirthDate(birthDate.toLocalDate());
+                }
+
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        closeConnection();
+        return person;
     }
 
     @Override
     public List<Person> getByFirstName(String firstName) {
-        return null;
+        // działanie na procedurze zapisanej w mysql
+        String query = "call get_by_first_name(?);";
+        List<Person> persons = new ArrayList<>();
+        openConnection();
+        try {
+            CallableStatement statement = connection.prepareCall(query);
+            statement.setString(1, firstName);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                persons.add(getPersonFromResultSet(resultSet));
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+        return persons;
     }
 
     @Override
@@ -97,7 +140,11 @@ public class PersonDao implements IPersonDao {
 
     @Override
     public List<Person> getByBirthDateBetween(LocalDate from, LocalDate to) {
-        return null;
+
+        return getAll().stream()
+                .filter(p -> p.getBirthDate() != null && p.getBirthDate().isAfter(from))
+                .filter(p -> p.getBirthDate() != null && p.getBirthDate().isBefore(to))
+                .collect(Collectors.toList());
     }
 
 //    @Override
@@ -131,18 +178,7 @@ public class PersonDao implements IPersonDao {
                 createId(), person.getFirstName(), person.getLastName(),
                 person.getBirthDateAsString());
 
-        openConnection();
-
-        int result = 0;
-        try {
-            Statement statement = connection.createStatement();
-            result = statement.executeUpdate(insert);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-
-        closeConnection();
-        return result;
+        return update(insert);
     }
 
     @Override
@@ -164,8 +200,48 @@ public class PersonDao implements IPersonDao {
         return result;
     }
 
+
     @Override
     public int updatePerson(int personId, Person person) {
-        return 0;
+        String update = String.format("update persons set first_name = '%s', last_name = '%s', birth_date = '%s'" +
+                " where person_id = %d", person.getFirstName(), person.getLastName(), person.getBirthDate(), personId);
+
+    return update(update);
+}
+
+    @Override
+    public void checkExecute() {
+        openConnection();
+        String query = "call pm()";
+
+        try {
+            Statement preparedStatement = connection.createStatement();
+            boolean isResult = preparedStatement.execute(query);
+            while (isResult) {
+                ResultSet resultSet = preparedStatement.getResultSet();
+                while (resultSet.next()) {
+                    System.out.println(resultSet.getObject(1) + " | " + resultSet.getObject(2));
+                }
+                isResult = preparedStatement.getMoreResults();
+                System.out.println("===============================================");
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        closeConnection();
+    }
+    private int update(String update) {
+        openConnection();
+
+        int result = 0;
+        try {
+            Statement statement = connection.createStatement();
+            result = statement.executeUpdate(update);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+        closeConnection();
+        return result;
     }
 }

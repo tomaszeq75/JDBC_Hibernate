@@ -9,17 +9,28 @@ import java.time.LocalDate;
 public class App {
     public static void main(String[] args) {
 
-        Person person = new Person("Jarek", "Marek", LocalDate.now());
+        Person person = new Person("Iwan", "Iwański", LocalDate.of(1998, 02, 13));
 //        person.setPersonId();
 
         IPersonDao personDao = new PersonDao();
 
 //        personDao.addPerson(person);
 
-        personDao.deletePerson(8);
+//        personDao.deletePerson(8);
+
+//        personDao.updatePerson(7, person);
+
         System.out.println(personDao.getAll());
 
+        System.out.println(personDao.getById(3));
 
+        System.out.println(personDao.getByFirstName("Jan"));
+        System.out.println(personDao.getByBirthDateBetween(
+                LocalDate.of(1990, 01, 01),
+                LocalDate.of(2000, 01, 01)
+        ));
+
+        personDao.checkExecute();
     }
 
     private static void początek() {

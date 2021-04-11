@@ -18,4 +18,5 @@ public interface IPersonDao {
     int deletePerson(int personId);
     int updatePerson(int personId, Person person);
 
+    void checkExecute();
 }
