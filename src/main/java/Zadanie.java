@@ -1,4 +1,5 @@
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,9 +13,13 @@ public class Zadanie {
         System.out.println(getNext2(list)); //2
         System.out.println(getNext2(list2)); //8
 
-        System.out.println("\nstream");
+        System.out.println("\nstream (2.1)");
         System.out.println(getNext2_1(list)); //2
         System.out.println(getNext2_1(list2)); //2
+
+        System.out.println("\nstream (2.2)");
+        System.out.println(getNext2_2(list)); //2
+        System.out.println(getNext2_2(list2)); //2
 
         System.out.println("\nnext 3");
         System.out.println(getNext3(37)); //2
@@ -23,7 +28,8 @@ public class Zadanie {
     }
 
     private static int getNext(List<Integer> list) {
-        return list.stream().max(Integer::compareTo).get() + 1;
+        return Collections.max(list) + 1;
+//        return list.stream().max(Integer::compareTo).get() + 1;
     }
 
     private static int getNext2(List<Integer> list) {
@@ -37,13 +43,22 @@ public class Zadanie {
         return i + 2;
     }
 
+    // przetwarza całą listę
     private static int getNext2_1(List<Integer> list) {
-        int min = list.stream().min(Integer::compareTo).get();
-        int[] currentValue = {min};
+        int[] currentValue = {Collections.min(list)};
         list.stream().sorted()
                 .forEach(x -> {
                     if (x == currentValue[0] + 1) currentValue[0]++;
                 });
+        return ++currentValue[0];
+    }
+
+    // java 9 - nie przetwarza całej listy
+    private static int getNext2_2(List<Integer> list) {
+        int[] currentValue = {Collections.min(list)};
+        list.stream().sorted().skip(1)
+                .takeWhile(x -> x == currentValue[0] + 1)
+                .forEach(x -> currentValue[0] = x);
         return ++currentValue[0];
     }
 
@@ -52,9 +67,9 @@ public class Zadanie {
         // największa liczba zer pomiędzy 1
         //return 2
         String binary = Integer.toBinaryString(a);
-        System.out.println(binary);
         String[] zeroes = binary.split("1");
-        System.out.println(Arrays.stream(zeroes).collect(Collectors.toList()));
+        System.out.println(binary);
+        System.out.println(Arrays.asList(zeroes));
         int result = 0;
         for (String z : zeroes) {
             if (z.length() > result) result = z.length();
