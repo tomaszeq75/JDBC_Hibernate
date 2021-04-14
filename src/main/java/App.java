@@ -22,10 +22,10 @@ public class App {
 
         System.out.println(personDao.getAll());
 
-        System.out.println(personDao.getById(3));
+        System.out.println("by id: " + personDao.getById(2));
 
         System.out.println(personDao.getByFirstName("Jan"));
-        System.out.println(personDao.getByBirthDateBetween(
+        System.out.println("between: " + personDao.getByBirthDateBetween(
                 LocalDate.of(1990, 01, 01),
                 LocalDate.of(2000, 01, 01)
         ));

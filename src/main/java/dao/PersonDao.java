@@ -4,7 +4,6 @@ import model.Person;
 
 import java.sql.*;
 import java.time.LocalDate;
-import java.time.chrono.ChronoLocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,7 +15,6 @@ public class PersonDao implements IPersonDao {
 
     private int createId() {
 
-        // todo nie działa
         String query = "select max(person_id) from persons";
         int res = 0;
         openConnection();
@@ -38,7 +36,6 @@ public class PersonDao implements IPersonDao {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver"); // podaje się gdy jest więcej sterowników baz danych
             connection = DriverManager.getConnection(url, "root", "root");
-            System.out.println("connected");
         } catch (SQLException | ClassNotFoundException throwables) {
             throwables.printStackTrace();
         }
@@ -93,18 +90,11 @@ public class PersonDao implements IPersonDao {
         String query = "select * from persons where person_id = ?";
         Person person = new Person();
         openConnection();
-        try (PreparedStatement statement = connection.prepareStatement(query)){
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, id);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                person.setPersonId(resultSet.getInt("person_id"));
-                person.setFirstName(resultSet.getString("first_name"));
-                person.setLastName(resultSet.getString("last_name"));
-                Date birthDate = resultSet.getDate("birth_date");
-                if (birthDate != null) {
-                    person.setBirthDate(birthDate.toLocalDate());
-                }
-
+                person = getPersonFromResultSet(resultSet);
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -135,6 +125,7 @@ public class PersonDao implements IPersonDao {
 
     @Override
     public List<Person> getByLastName(String lastName) {
+        // todo dokończyć samemu
         return null;
     }
 
@@ -142,11 +133,11 @@ public class PersonDao implements IPersonDao {
     public List<Person> getByBirthDateBetween(LocalDate from, LocalDate to) {
 
         return getAll().stream()
-                .filter(p -> p.getBirthDate() != null && p.getBirthDate().isAfter(from))
-                .filter(p -> p.getBirthDate() != null && p.getBirthDate().isBefore(to))
+                .filter(p -> p.getBirthDate() != null && p.getBirthDate().isAfter(from) && p.getBirthDate().isBefore(to))
                 .collect(Collectors.toList());
     }
 
+    //    nie działa na metodzie executeUpdate
 //    @Override
 //    public int addPerson(Person person) {
 //        String insert = "insert into persons values(?, ?, ?)";
@@ -184,20 +175,7 @@ public class PersonDao implements IPersonDao {
     @Override
     public int deletePerson(int personId) {
         String delete = String.format("delete from persons where person_id = %d", personId);
-
-        openConnection();
-
-        int result = 0;
-        try {
-            Statement statement = connection.createStatement();
-            result = statement.executeUpdate(delete);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-
-        closeConnection();
-        System.out.println("removed " + result + " records");
-        return result;
+        return update(delete);
     }
 
 
@@ -206,8 +184,8 @@ public class PersonDao implements IPersonDao {
         String update = String.format("update persons set first_name = '%s', last_name = '%s', birth_date = '%s'" +
                 " where person_id = %d", person.getFirstName(), person.getLastName(), person.getBirthDate(), personId);
 
-    return update(update);
-}
+        return update(update);
+    }
 
     @Override
     public void checkExecute() {
@@ -230,6 +208,7 @@ public class PersonDao implements IPersonDao {
         }
         closeConnection();
     }
+
     private int update(String update) {
         openConnection();
 
