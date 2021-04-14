@@ -1,6 +1,8 @@
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Zadanie {
@@ -21,10 +23,15 @@ public class Zadanie {
         System.out.println(getNext2_2(list)); //2
         System.out.println(getNext2_2(list2)); //2
 
-        System.out.println("\nnext 3");
+        System.out.println("\nnext 3 - loop");
         System.out.println(getNext3(37)); //2
         System.out.println(getNext3(128)); //2
         System.out.println(getNext3(145)); //2
+
+        System.out.println("\nnext 3_1 - regex");
+        System.out.println(getNext3_1(37)); //2
+        System.out.println(getNext3_1(128)); //2
+        System.out.println(getNext3_1(145)); //2
     }
 
     private static int getNext(List<Integer> list) {
@@ -62,17 +69,40 @@ public class Zadanie {
         return ++currentValue[0];
     }
 
-    private static int getNext3(int a) {
+    // regex
+    private static int getNext3_1(int a) {
         //a = 37 -> binarne 0000100101000
         // największa liczba zer pomiędzy 1
-        //return 2
+
         String binary = Integer.toBinaryString(a);
-        String[] zeroes = binary.split("1");
         System.out.println(binary);
-        System.out.println(Arrays.asList(zeroes));
         int result = 0;
-        for (String z : zeroes) {
-            if (z.length() > result) result = z.length();
+
+        Pattern pattern = Pattern.compile("(?=1(0+)1)");
+        Matcher matcher = pattern.matcher(binary);
+        while (matcher.find()) {
+            if (result < matcher.group(1).length()) {
+                result = matcher.group(1).length();
+            }
+        }
+
+        return result;
+    }
+
+    // loop
+    private static int getNext3(int a) {
+        String binary = Integer.toBinaryString(a);
+        System.out.println(binary);
+        int result = 0;
+        int lastOcurrenceIndex = 0;
+
+        for (int i = 0; i < binary.length(); i++) {
+            if (binary.charAt(i) == '1') {
+                if (result < i - lastOcurrenceIndex) {
+                    result = i - lastOcurrenceIndex - 1;
+                }
+                lastOcurrenceIndex = i;
+            }
         }
         return result;
     }
