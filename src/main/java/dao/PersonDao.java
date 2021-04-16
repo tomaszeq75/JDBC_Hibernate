@@ -125,9 +125,24 @@ public class PersonDao implements IPersonDao {
 
     @Override
     public List<Person> getByLastName(String lastName) {
-        // todo dokończyć samemu
-        return null;
+        List<Person> persons = new ArrayList<>();
+        String query = "select * from persons where last_name = ?";
+
+        openConnection();
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, lastName);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Person person = getPersonFromResultSet(resultSet);
+                persons.add(person);
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        closeConnection();
+        return persons;
     }
+
 
     @Override
     public List<Person> getByBirthDateBetween(LocalDate from, LocalDate to) {

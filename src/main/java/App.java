@@ -31,6 +31,8 @@ public class App {
         ));
 
         personDao.checkExecute();
+
+        System.out.println(personDao.getByLastName("Marek"));
     }
 
     private static void początek() {
