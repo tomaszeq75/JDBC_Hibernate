@@ -33,6 +33,7 @@ public class App {
         personDao.checkExecute();
 
         System.out.println(personDao.getByLastName("Marek"));
+        System.out.println(personDao.getByLastName("Jarek"));
     }
 
     private static void początek() {
