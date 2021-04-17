@@ -12,26 +12,26 @@ public class Zadanie {
         System.out.println(getNext(list)); //71
 
         System.out.println("\nloop");
-        System.out.println(getNext2(list)); //2
-        System.out.println(getNext2(list2)); //8
+        System.out.println(getNext2(list));
+        System.out.println(getNext2(list2));
 
         System.out.println("\nstream (2.1)");
-        System.out.println(getNext2_1(list)); //2
-        System.out.println(getNext2_1(list2)); //2
+        System.out.println(getNext2_1(list));
+        System.out.println(getNext2_1(list2));
 
         System.out.println("\nstream (2.2)");
-        System.out.println(getNext2_2(list)); //2
-        System.out.println(getNext2_2(list2)); //2
+        System.out.println(getNext2_2(list));
+        System.out.println(getNext2_2(list2));
 
         System.out.println("\nnext 3 - loop");
-        System.out.println(getNext3(37)); //2
-        System.out.println(getNext3(128)); //2
-        System.out.println(getNext3(145)); //2
+        System.out.println(getNext3(37));
+        System.out.println(getNext3(128));
+        System.out.println(getNext3(145));
 
         System.out.println("\nnext 3_1 - regex");
-        System.out.println(getNext3_1(37)); //2
-        System.out.println(getNext3_1(128)); //2
-        System.out.println(getNext3_1(145)); //2
+        System.out.println(getNext3_1(37));
+        System.out.println(getNext3_1(128));
+        System.out.println(getNext3_1(145));
     }
 
     private static int getNext(List<Integer> list) {
