@@ -69,6 +69,21 @@ public class Zadanie {
         return ++currentValue[0];
     }
 
+    private static int getNext3_2(int a) {
+        String binary = Integer.toBinaryString(a);
+        System.out.println(binary);
+        int result = 0;
+
+        String[] zeroes = binary.split("1");
+        if (binary.charAt(binary.length() - 1) == '1') {
+            zeroes[zeroes.length - 1] = "";
+        }
+        // todo dokończyć
+
+
+        return result;
+    }
+
     // regex
     private static int getNext3_1(int a) {
         //a = 37 -> binarne 0000100101000
